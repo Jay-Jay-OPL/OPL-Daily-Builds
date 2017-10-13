@@ -248,6 +248,15 @@ static config_set_t* elmGetConfig(int id) {
 static int elmGetImage(char* folder, int isRelative, char* value, char* suffix, GSTEXTURE* resultTex, short psm) {
 	//value = elmGetELFName(value);
 	// Search every device from fastest to slowest (HDD > ETH > USB)
+	
+	//START of OPL_DB tweaks
+	
+	//Let's remove the XX. and SB. prefix from the ELF file name
+    if (strncmp("XX.",value,3) == 0 || strncmp("SB.",value,3) == 0){
+      value += 3;
+    }
+	//END of OPL_DB tweaks
+  
 	static item_list_t *listSupport = NULL;
 	if ( (listSupport = hddGetObject(1)) ) {
 		if (listSupport->itemGetImage(folder, isRelative, value, suffix, resultTex, psm) >= 0)
