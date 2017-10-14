@@ -187,14 +187,23 @@ static config_set_t* elmGetConfig(int id) {
 	struct config_value_t* cur = elmGetConfigValue(id);
 	int ret=0;
 	
+    //START of OPL_DB tweaks
+    char * filename = elmGetELFName(cur->val);
+	
+    //Let's remove the XX. and SB. prefix from the ELF file name
+    if (strncmp("XX.",filename,3) == 0 || strncmp("SB.",filename,3) == 0){
+	    filename += 3;
+    }
+    //END of OPL_DB tweaks
+
 	//Search on HDD, SMB, USB for the CFG/GAME.ELF.cfg file.
 	//HDD
 	if ( (listSupport = hddGetObject(1)) ) {
 		char path[256];
 		#if OPL_IS_DEV_BUILD
-			snprintf(path, sizeof(path), "%sCFG-DEV/%s.cfg", hddGetPrefix(), elmGetELFName(cur->val));
+			snprintf(path, sizeof(path), "%sCFG-DEV/%s.cfg", hddGetPrefix(), filename);
 		#else
-			snprintf(path, sizeof(path), "%sCFG/%s.cfg", hddGetPrefix(), elmGetELFName(cur->val));
+			snprintf(path, sizeof(path), "%sCFG/%s.cfg", hddGetPrefix(), filename);
 		#endif
 		config = configAlloc(1, NULL, path);
 		ret = configRead(config);
@@ -207,9 +216,9 @@ static config_set_t* elmGetConfig(int id) {
 			configFree(config);
 		
 		#if OPL_IS_DEV_BUILD
-			snprintf(path, sizeof(path), "%sCFG-DEV/%s.cfg", ethGetPrefix(), elmGetELFName(cur->val));
+			snprintf(path, sizeof(path), "%sCFG-DEV/%s.cfg", ethGetPrefix(), filename);
 		#else
-			snprintf(path, sizeof(path), "%sCFG/%s.cfg", ethGetPrefix(),elmGetELFName(cur->val));
+			snprintf(path, sizeof(path), "%sCFG/%s.cfg", ethGetPrefix(),filename);
 		#endif
 		config = configAlloc(1, NULL, path);
 		ret = configRead(config);	
@@ -222,9 +231,9 @@ static config_set_t* elmGetConfig(int id) {
 			configFree(config);
 		
 		#if OPL_IS_DEV_BUILD
-			snprintf(path, sizeof(path), "%sCFG-DEV/%s.cfg", usbGetPrefix(),  elmGetELFName(cur->val));
+			snprintf(path, sizeof(path), "%sCFG-DEV/%s.cfg", usbGetPrefix(),  filename);
 		#else
-			snprintf(path, sizeof(path), "%sCFG/%s.cfg", usbGetPrefix(), elmGetELFName(cur->val));
+			snprintf(path, sizeof(path), "%sCFG/%s.cfg", usbGetPrefix(), filename);
 		#endif
 		config = configAlloc(1, NULL, path);
 		ret = configRead(config);
@@ -237,7 +246,7 @@ static config_set_t* elmGetConfig(int id) {
 		config = configAlloc(1, NULL, NULL);
 	}
 	
-	configSetStr(config, CONFIG_ITEM_NAME, elmGetELFName(cur->val));
+	configSetStr(config, CONFIG_ITEM_NAME, filename);
 	configSetStr(config, CONFIG_ITEM_LONGNAME, cur->key);
 	configSetStr(config, CONFIG_ITEM_STARTUP, cur->val);
 	configSetStr(config, CONFIG_ITEM_FORMAT, "ELF");
