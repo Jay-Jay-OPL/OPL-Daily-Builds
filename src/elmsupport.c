@@ -188,7 +188,9 @@ static config_set_t* elmGetConfig(int id) {
 	int ret=0;
 	
     //START of OPL_DB tweaks
-    char * filename = elmGetELFName(cur->val);
+    char * orig = elmGetELFName(cur->val);
+    char * filename = malloc(strlen(orig) + 1);
+    strcpy(filename, orig);
 	
     //Let's remove the XX. and SB. prefix from the ELF file name
     if (strncmp("XX.",filename,3) == 0 || strncmp("SB.",filename,3) == 0){
@@ -261,35 +263,37 @@ static config_set_t* elmGetConfig(int id) {
 }
 
 static int elmGetImage(char* folder, int isRelative, char* value, char* suffix, GSTEXTURE* resultTex, short psm) {
-	//value = elmGetELFName(value);
+    char * orig = elmGetELFName(value);
+    char * filename = malloc(strlen(orig) + 1);
+    strcpy(filename, orig);
 	// Search every device from fastest to slowest (HDD > ETH > USB)
 	
 	//START of OPL_DB tweaks
 	//Let's remove the XX. and SB. prefix from the ELF file name
-    if (strncmp("XX.",value,3) == 0 || strncmp("SB.",value,3) == 0){
-		value += 3;
+    if (strncmp("XX.",filename,3) == 0 || strncmp("SB.",filename,3) == 0){
+		filename += 3;
     }
 	
 	//Let's see if there's a game id there? If there's use that instead of file name.
-	int size = strlen(value);
-	if ((size >= 17) && (value[4] == '_') && (value[8] == '.') && (value[11] == '.')) {//Game ID found
-		value[11] = '\0'; //Crop only the game id
+	int size = strlen(filename);
+	if ((size >= 17) && (filename[4] == '_') && (filename[8] == '.') && (filename[11] == '.')) {//Game ID found
+		filename[11] = '\0'; //Crop only the game id
     }
 	//END of OPL_DB tweaks
   
 	static item_list_t *listSupport = NULL;
 	if ( (listSupport = hddGetObject(1)) ) {
-		if (listSupport->itemGetImage(folder, isRelative, value, suffix, resultTex, psm) >= 0)
+		if (listSupport->itemGetImage(folder, isRelative, filename, suffix, resultTex, psm) >= 0)
 			return 0;
 	}
 
 	if ( (listSupport = ethGetObject(1)) ) {
-		if (listSupport->itemGetImage(folder, isRelative, value, suffix, resultTex, psm) >= 0)
+		if (listSupport->itemGetImage(folder, isRelative, filename, suffix, resultTex, psm) >= 0)
 			return 0;
 	}
 
 	if ( (listSupport = usbGetObject(1)) )
-		return listSupport->itemGetImage(folder, isRelative, value, suffix, resultTex, psm);
+		return listSupport->itemGetImage(folder, isRelative, filename, suffix, resultTex, psm);
 
 	return -1;
 }
