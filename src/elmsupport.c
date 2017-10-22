@@ -74,7 +74,7 @@ static int elmUpdateItemList(void) {
 	if (configElm != NULL)
 		configFree(configElm);
 	
-	//Try MC?:/OPL/conf_elm.cfg
+	//Try MC?:/OPL/conf_elmz.cfg
 	snprintf(path, sizeof(path), "%s/conf_elmz.cfg", gBaseMCDir);
 	configElm = configAlloc(CONFIG_ELM, NULL, path);
 	ret = configRead(configElm);
