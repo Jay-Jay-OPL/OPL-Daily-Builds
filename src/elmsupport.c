@@ -75,7 +75,7 @@ static int elmUpdateItemList(void) {
 		configFree(configElm);
 	
 	//Try MC?:/OPL/conf_elms.cfg
-	snprintf(path, sizeof(path), "%s/conf_elms.cfg", gBaseMCDir);
+	snprintf(path, sizeof(path), "%s/conf_elmz.cfg", gBaseMCDir);
 	configElm = configAlloc(CONFIG_ELM, NULL, path);
 	ret = configRead(configElm);
 	
@@ -84,7 +84,7 @@ static int elmUpdateItemList(void) {
 		if (configElm != NULL){
 			configFree(configElm);
 		}
-		snprintf(path, sizeof(path), "%sconf_elms.cfg", hddGetPrefix());
+		snprintf(path, sizeof(path), "%sconf_elmz.cfg", hddGetPrefix());
 		configElm = configAlloc(CONFIG_ELM, NULL, path);
 		ret = configRead(configElm);
 	}
@@ -94,7 +94,7 @@ static int elmUpdateItemList(void) {
 		if (configElm != NULL){
 			configFree(configElm);
 		}
-		snprintf(path, sizeof(path), "%sconf_elms.cfg", ethGetPrefix());
+		snprintf(path, sizeof(path), "%sconf_elmz.cfg", ethGetPrefix());
 		configElm = configAlloc(CONFIG_ELM, NULL, path);
 		ret = configRead(configElm);	
 	}
@@ -104,7 +104,7 @@ static int elmUpdateItemList(void) {
 		if (configElm != NULL){
 			configFree(configElm);
 		}
-		snprintf(path, sizeof(path), "%sconf_elms.cfg", usbGetPrefix());
+		snprintf(path, sizeof(path), "%sconf_elmz.cfg", usbGetPrefix());
 		configElm = configAlloc(CONFIG_ELM, NULL, path);
 		ret = configRead(configElm);
 	}
@@ -194,6 +194,12 @@ static config_set_t* elmGetConfig(int id) {
     if (strncmp("XX.",filename,3) == 0 || strncmp("SB.",filename,3) == 0){
 	    filename += 3;
     }
+	
+	//Let's see if there's a game id there? If there's use that instead of file name.
+	int size = strlen(filename);
+	if ((size >= 17) && (filename[4] == '_') && (filename[8] == '.') && (filename[11] == '.')) {//Game ID found
+		filename[11] = '\0'; //Crop only the game id
+	}
     //END of OPL_DB tweaks
 
 	//Search on HDD, SMB, USB for the CFG/GAME.ELF.cfg file.
@@ -259,10 +265,15 @@ static int elmGetImage(char* folder, int isRelative, char* value, char* suffix, 
 	// Search every device from fastest to slowest (HDD > ETH > USB)
 	
 	//START of OPL_DB tweaks
-	
 	//Let's remove the XX. and SB. prefix from the ELF file name
     if (strncmp("XX.",value,3) == 0 || strncmp("SB.",value,3) == 0){
-      value += 3;
+		value += 3;
+    }
+	
+	//Let's see if there's a game id there? If there's use that instead of file name.
+	int size = strlen(value);
+	if ((size >= 17) && (value[4] == '_') && (value[8] == '.') && (value[11] == '.')) {//Game ID found
+		value[11] = '\0'; //Crop only the game id
     }
 	//END of OPL_DB tweaks
   
