@@ -277,12 +277,12 @@ static config_set_t* elmGetConfig(int id) {
 }
 
 static int elmGetImage(char* folder, int isRelative, char* value, char* suffix, GSTEXTURE* resultTex, short psm) {
-    char * orig = elmGetELFName(value);
+    //START of OPL_DB tweaks
+	char * orig = elmGetELFName(value);
     char * filename = malloc(strlen(orig) + 1);
     strcpy(filename, orig);
 	// Search every device from fastest to slowest (HDD > ETH > USB)
 	
-	//START of OPL_DB tweaks
 	//Let's remove the XX. and SB. prefix from the ELF file name
     if (strncmp("XX.",filename,3) == 0 || strncmp("SB.",filename,3) == 0){
 		filename += 3;
