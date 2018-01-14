@@ -209,9 +209,13 @@ static config_set_t* elmGetConfig(int id) {
 	if ( (listSupport = hddGetObject(1)) ) {
 		char path[256];
 		#if OPL_IS_DEV_BUILD
+			//START of OPL_DB tweaks
 			snprintf(path, sizeof(path), "%sCFG-DEV/%s.cfg", hddGetPrefix(), filename);
+			//END of OPL_DB tweaks
 		#else
+			//START of OPL_DB tweaks
 			snprintf(path, sizeof(path), "%sCFG/%s.cfg", hddGetPrefix(), filename);
+			//END of OPL_DB tweaks
 		#endif
 		config = configAlloc(1, NULL, path);
 		ret = configRead(config);
@@ -224,9 +228,13 @@ static config_set_t* elmGetConfig(int id) {
 			configFree(config);
 		
 		#if OPL_IS_DEV_BUILD
+			//START of OPL_DB tweaks
 			snprintf(path, sizeof(path), "%sCFG-DEV/%s.cfg", ethGetPrefix(), filename);
+			//END of OPL_DB tweaks
 		#else
+			//START of OPL_DB tweaks
 			snprintf(path, sizeof(path), "%sCFG/%s.cfg", ethGetPrefix(),filename);
+			//END of OPL_DB tweaks
 		#endif
 		config = configAlloc(1, NULL, path);
 		ret = configRead(config);	
@@ -239,9 +247,13 @@ static config_set_t* elmGetConfig(int id) {
 			configFree(config);
 		
 		#if OPL_IS_DEV_BUILD
+			//START of OPL_DB tweaks
 			snprintf(path, sizeof(path), "%sCFG-DEV/%s.cfg", usbGetPrefix(),  filename);
+			//END of OPL_DB tweaks
 		#else
+			//START of OPL_DB tweaks
 			snprintf(path, sizeof(path), "%sCFG/%s.cfg", usbGetPrefix(), filename);
+			//END of OPL_DB tweaks
 		#endif
 		config = configAlloc(1, NULL, path);
 		ret = configRead(config);
@@ -254,7 +266,9 @@ static config_set_t* elmGetConfig(int id) {
 		config = configAlloc(1, NULL, NULL);
 	}
 	
+	//START of OPL_DB tweaks
 	configSetStr(config, CONFIG_ITEM_NAME, filename);
+	//END of OPL_DB tweaks
 	configSetStr(config, CONFIG_ITEM_LONGNAME, cur->key);
 	configSetStr(config, CONFIG_ITEM_STARTUP, cur->val);
 	configSetStr(config, CONFIG_ITEM_FORMAT, "ELF");
@@ -279,8 +293,7 @@ static int elmGetImage(char* folder, int isRelative, char* value, char* suffix, 
 	if ((size >= 17) && (filename[4] == '_') && (filename[8] == '.') && (filename[11] == '.')) {//Game ID found
 		filename[11] = '\0'; //Crop only the game id
     }
-	//END of OPL_DB tweaks
-  
+	
 	static item_list_t *listSupport = NULL;
 	if ( (listSupport = hddGetObject(1)) ) {
 		if (listSupport->itemGetImage(folder, isRelative, filename, suffix, resultTex, psm) >= 0)
@@ -294,7 +307,7 @@ static int elmGetImage(char* folder, int isRelative, char* value, char* suffix, 
 
 	if ( (listSupport = usbGetObject(1)) )
 		return listSupport->itemGetImage(folder, isRelative, filename, suffix, resultTex, psm);
-
+	//END of OPL_DB tweaks
 	return -1;
 }
 
