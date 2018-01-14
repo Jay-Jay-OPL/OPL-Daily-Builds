@@ -278,9 +278,8 @@ static config_set_t* elmGetConfig(int id) {
 
 static int elmGetImage(char* folder, int isRelative, char* value, char* suffix, GSTEXTURE* resultTex, short psm) {
     //START of OPL_DB tweaks
-	char * orig = elmGetELFName(value);
-    char * filename = malloc(strlen(orig) + 1);
-    strcpy(filename, orig);
+    char * filename = malloc(strlen(value) + 1);
+    strcpy(filename, value);
 	// Search every device from fastest to slowest (HDD > ETH > USB)
 	
 	//Let's remove the XX. and SB. prefix from the ELF file name
