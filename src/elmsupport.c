@@ -135,7 +135,25 @@ static int elmGetItemNameLength(int id) {
 
 static char* elmGetItemStartup(int id) {
 	struct config_value_t* cur = elmGetConfigValue(id);
-	return elmGetELFName(cur->val);
+	
+	//START of OPL_DB tweaks
+    char * orig = elmGetELFName(cur->val);
+    char * filename = malloc(strlen(orig) + 1);
+    strcpy(filename, orig);
+	
+    //Let's remove the XX. and SB. prefix from the ELF file name
+    if (strncmp("XX.",filename,3) == 0 || strncmp("SB.",filename,3) == 0){
+	    filename += 3;
+    }
+	
+	//Let's see if there's a game id there? If there's use that instead of file name.
+	int size = strlen(filename);
+	if ((size >= 17) && (filename[4] == '_') && (filename[8] == '.') && (filename[11] == '.')) {//Game ID found
+		filename[11] = '\0'; //Crop only the game id
+	}
+    //END of OPL_DB tweaks
+	
+	return filename;
 }
 
 #ifndef __CHILDPROOF
