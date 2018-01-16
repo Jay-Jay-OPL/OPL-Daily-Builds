@@ -199,6 +199,42 @@ static void elmLaunchItem(int id, config_set_t* configSet) {
 		guiMsgBox(_l(_STR_ERR_FILE_INVALID), 0, NULL);
 }
 
+//START of OPL_DB tweaks
+static int elmGetVcdSize(char *path)
+{
+	int size = 0;
+	char * pathPtr = malloc(strlen(path) + 1);
+	strcpy(pathPtr, path);
+	
+	char* filename = strrchr(pathPtr, '/');
+	if (filename){
+		filename++;//Remove the /
+		char * filenameOrig = filename;
+		int filenameSize = strlen(filename);
+		//Let's remove the XX. and SB. prefix if exists
+		if (strncmp("XX.",filename,3) == 0 || strncmp("SB.",filename,3) == 0){
+			filename += 3;
+			filenameSize-=3;
+			memmove(filenameOrig, filename, filenameSize+1);
+		}
+		
+		//Replace extension with VCD
+		filenameOrig[filenameSize-3]= 'V';
+		filenameOrig[filenameSize-2]= 'C';
+		filenameOrig[filenameSize-1]= 'D';	
+			
+		int fd;
+		if ((fd = fileXioOpen(pathPtr,O_RDONLY, 0666)) >= 0) {
+			size = fileXioLseek(fd, 0, SEEK_END);
+			fileXioClose(fd);
+		}
+	}
+	size = size >> 20;//Bytes To MB
+	free(pathPtr);
+	return size;
+}
+//END of OPL_DB tweaks
+
 static config_set_t* elmGetConfig(int id) {
 	config_set_t* config = NULL;
 	static item_list_t *listSupport = NULL;
@@ -207,7 +243,8 @@ static config_set_t* elmGetConfig(int id) {
 	
     //START of OPL_DB tweaks
     char * orig = elmGetELFName(cur->val);
-    char * filename = malloc(strlen(orig) + 1);
+	char * filenamePtr = malloc(strlen(orig) + 1);
+	char * filename = filenamePtr;
     strcpy(filename, orig);
 	
     //Let's remove the XX. and SB. prefix from the ELF file name
@@ -286,6 +323,10 @@ static config_set_t* elmGetConfig(int id) {
 	
 	//START of OPL_DB tweaks
 	configSetStr(config, CONFIG_ITEM_NAME, filename);
+	int vcdSize = elmGetVcdSize(cur->val);
+	if (vcdSize > 0)
+		configSetInt(config, CONFIG_ITEM_SIZE, vcdSize);
+	free(filenamePtr);
 	//END of OPL_DB tweaks
 	configSetStr(config, CONFIG_ITEM_LONGNAME, cur->key);
 	configSetStr(config, CONFIG_ITEM_STARTUP, cur->val);
@@ -296,8 +337,10 @@ static config_set_t* elmGetConfig(int id) {
 
 static int elmGetImage(char* folder, int isRelative, char* value, char* suffix, GSTEXTURE* resultTex, short psm) {
     //START of OPL_DB tweaks
-    char * filename = malloc(strlen(value) + 1);
+	char * filenamePtr = malloc(strlen(value) + 1);
+	char * filename = filenamePtr;
     strcpy(filename, value);
+	
 	// Search every device from fastest to slowest (HDD > ETH > USB)
 	
 	//Let's remove the XX. and SB. prefix from the ELF file name
@@ -324,6 +367,8 @@ static int elmGetImage(char* folder, int isRelative, char* value, char* suffix, 
 
 	if ( (listSupport = usbGetObject(1)) )
 		return listSupport->itemGetImage(folder, isRelative, filename, suffix, resultTex, psm);
+	
+	free(filenamePtr);
 	//END of OPL_DB tweaks
 	return -1;
 }
