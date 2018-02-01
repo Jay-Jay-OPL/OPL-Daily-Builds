@@ -135,7 +135,25 @@ static int elmGetItemNameLength(int id) {
 
 static char* elmGetItemStartup(int id) {
 	struct config_value_t* cur = elmGetConfigValue(id);
-	return elmGetELFName(cur->val);
+	
+	//START of OPL_DB tweaks
+    char * orig = elmGetELFName(cur->val);
+    char * filename = malloc(strlen(orig) + 1);
+    strcpy(filename, orig);
+	
+    //Let's remove the XX. and SB. prefix from the ELF file name
+    if (strncmp("XX.",filename,3) == 0 || strncmp("SB.",filename,3) == 0){
+	    filename += 3;
+    }
+	
+	//Let's see if there's a game id there? If there's use that instead of file name.
+	int size = strlen(filename);
+	if ((size >= 17) && (filename[4] == '_') && (filename[8] == '.') && (filename[11] == '.')) {//Game ID found
+		filename[11] = '\0'; //Crop only the game id
+	}
+    //END of OPL_DB tweaks
+	
+	return filename;
 }
 
 #ifndef __CHILDPROOF
@@ -181,20 +199,78 @@ static void elmLaunchItem(int id, config_set_t* configSet) {
 		guiMsgBox(_l(_STR_ERR_FILE_INVALID), 0, NULL);
 }
 
+//START of OPL_DB tweaks
+static int elmGetVcdSize(char *path)
+{
+	int size = 0;
+	char * pathPtr = malloc(strlen(path) + 1);
+	strcpy(pathPtr, path);
+	
+	char* filename = strrchr(pathPtr, '/');
+	if (filename){
+		filename++;//Remove the /
+		char * filenameOrig = filename;
+		int filenameSize = strlen(filename);
+		//Let's remove the XX. and SB. prefix if exists
+		if (strncmp("XX.",filename,3) == 0 || strncmp("SB.",filename,3) == 0){
+			filename += 3;
+			filenameSize-=3;
+			memmove(filenameOrig, filename, filenameSize+1);
+		}
+		
+		//Replace extension with VCD
+		filenameOrig[filenameSize-3]= 'V';
+		filenameOrig[filenameSize-2]= 'C';
+		filenameOrig[filenameSize-1]= 'D';	
+			
+		int fd;
+		if ((fd = fileXioOpen(pathPtr,O_RDONLY, 0666)) >= 0) {
+			size = fileXioLseek(fd, 0, SEEK_END);
+			fileXioClose(fd);
+		}
+	}
+	size = size >> 20;//Bytes To MB
+	free(pathPtr);
+	return size;
+}
+//END of OPL_DB tweaks
+
 static config_set_t* elmGetConfig(int id) {
 	config_set_t* config = NULL;
 	static item_list_t *listSupport = NULL;
 	struct config_value_t* cur = elmGetConfigValue(id);
 	int ret=0;
 	
+    //START of OPL_DB tweaks
+    char * orig = elmGetELFName(cur->val);
+	char * filenamePtr = malloc(strlen(orig) + 1);
+	char * filename = filenamePtr;
+    strcpy(filename, orig);
+	
+    //Let's remove the XX. and SB. prefix from the ELF file name
+    if (strncmp("XX.",filename,3) == 0 || strncmp("SB.",filename,3) == 0){
+	    filename += 3;
+    }
+	
+	//Let's see if there's a game id there? If there's use that instead of file name.
+	int size = strlen(filename);
+	if ((size >= 17) && (filename[4] == '_') && (filename[8] == '.') && (filename[11] == '.')) {//Game ID found
+		filename[11] = '\0'; //Crop only the game id
+	}
+    //END of OPL_DB tweaks
+
 	//Search on HDD, SMB, USB for the CFG/GAME.ELF.cfg file.
 	//HDD
 	if ( (listSupport = hddGetObject(1)) ) {
 		char path[256];
 		#if OPL_IS_DEV_BUILD
-			snprintf(path, sizeof(path), "%sCFG-DEV/%s.cfg", hddGetPrefix(), elmGetELFName(cur->val));
+			//START of OPL_DB tweaks
+			snprintf(path, sizeof(path), "%sCFG-DEV/%s.cfg", hddGetPrefix(), filename);
+			//END of OPL_DB tweaks
 		#else
-			snprintf(path, sizeof(path), "%sCFG/%s.cfg", hddGetPrefix(), elmGetELFName(cur->val));
+			//START of OPL_DB tweaks
+			snprintf(path, sizeof(path), "%sCFG/%s.cfg", hddGetPrefix(), filename);
+			//END of OPL_DB tweaks
 		#endif
 		config = configAlloc(1, NULL, path);
 		ret = configRead(config);
@@ -207,9 +283,13 @@ static config_set_t* elmGetConfig(int id) {
 			configFree(config);
 		
 		#if OPL_IS_DEV_BUILD
-			snprintf(path, sizeof(path), "%sCFG-DEV/%s.cfg", ethGetPrefix(), elmGetELFName(cur->val));
+			//START of OPL_DB tweaks
+			snprintf(path, sizeof(path), "%sCFG-DEV/%s.cfg", ethGetPrefix(), filename);
+			//END of OPL_DB tweaks
 		#else
-			snprintf(path, sizeof(path), "%sCFG/%s.cfg", ethGetPrefix(),elmGetELFName(cur->val));
+			//START of OPL_DB tweaks
+			snprintf(path, sizeof(path), "%sCFG/%s.cfg", ethGetPrefix(),filename);
+			//END of OPL_DB tweaks
 		#endif
 		config = configAlloc(1, NULL, path);
 		ret = configRead(config);	
@@ -222,9 +302,13 @@ static config_set_t* elmGetConfig(int id) {
 			configFree(config);
 		
 		#if OPL_IS_DEV_BUILD
-			snprintf(path, sizeof(path), "%sCFG-DEV/%s.cfg", usbGetPrefix(),  elmGetELFName(cur->val));
+			//START of OPL_DB tweaks
+			snprintf(path, sizeof(path), "%sCFG-DEV/%s.cfg", usbGetPrefix(),  filename);
+			//END of OPL_DB tweaks
 		#else
-			snprintf(path, sizeof(path), "%sCFG/%s.cfg", usbGetPrefix(), elmGetELFName(cur->val));
+			//START of OPL_DB tweaks
+			snprintf(path, sizeof(path), "%sCFG/%s.cfg", usbGetPrefix(), filename);
+			//END of OPL_DB tweaks
 		#endif
 		config = configAlloc(1, NULL, path);
 		ret = configRead(config);
@@ -237,7 +321,13 @@ static config_set_t* elmGetConfig(int id) {
 		config = configAlloc(1, NULL, NULL);
 	}
 	
-	configSetStr(config, CONFIG_ITEM_NAME, elmGetELFName(cur->val));
+	//START of OPL_DB tweaks
+	configSetStr(config, CONFIG_ITEM_NAME, filename);
+	int vcdSize = elmGetVcdSize(cur->val);
+	if (vcdSize > 0)
+		configSetInt(config, CONFIG_ITEM_SIZE, vcdSize);
+	free(filenamePtr);
+	//END of OPL_DB tweaks
 	configSetStr(config, CONFIG_ITEM_LONGNAME, cur->key);
 	configSetStr(config, CONFIG_ITEM_STARTUP, cur->val);
 	configSetStr(config, CONFIG_ITEM_FORMAT, "ELF");
@@ -246,22 +336,40 @@ static config_set_t* elmGetConfig(int id) {
 }
 
 static int elmGetImage(char* folder, int isRelative, char* value, char* suffix, GSTEXTURE* resultTex, short psm) {
-	//value = elmGetELFName(value);
+    //START of OPL_DB tweaks
+	char * filenamePtr = malloc(strlen(value) + 1);
+	char * filename = filenamePtr;
+    strcpy(filename, value);
+	
 	// Search every device from fastest to slowest (HDD > ETH > USB)
+	
+	//Let's remove the XX. and SB. prefix from the ELF file name
+    if (strncmp("XX.",filename,3) == 0 || strncmp("SB.",filename,3) == 0){
+		filename += 3;
+    }
+	
+	//Let's see if there's a game id there? If there's use that instead of file name.
+	int size = strlen(filename);
+	if ((size >= 17) && (filename[4] == '_') && (filename[8] == '.') && (filename[11] == '.')) {//Game ID found
+		filename[11] = '\0'; //Crop only the game id
+    }
+	
 	static item_list_t *listSupport = NULL;
 	if ( (listSupport = hddGetObject(1)) ) {
-		if (listSupport->itemGetImage(folder, isRelative, value, suffix, resultTex, psm) >= 0)
+		if (listSupport->itemGetImage(folder, isRelative, filename, suffix, resultTex, psm) >= 0)
 			return 0;
 	}
 
 	if ( (listSupport = ethGetObject(1)) ) {
-		if (listSupport->itemGetImage(folder, isRelative, value, suffix, resultTex, psm) >= 0)
+		if (listSupport->itemGetImage(folder, isRelative, filename, suffix, resultTex, psm) >= 0)
 			return 0;
 	}
 
 	if ( (listSupport = usbGetObject(1)) )
-		return listSupport->itemGetImage(folder, isRelative, value, suffix, resultTex, psm);
-
+		return listSupport->itemGetImage(folder, isRelative, filename, suffix, resultTex, psm);
+	
+	free(filenamePtr);
+	//END of OPL_DB tweaks
 	return -1;
 }
 
