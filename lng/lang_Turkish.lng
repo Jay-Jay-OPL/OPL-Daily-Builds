@@ -68,7 +68,7 @@ Yenile
 USB cihazı başlangıç türü
 HDD cihazı başlangıç türü
 AĞ cihazı başlangıç türü
-Uygulamalar menüsü görünüm kipi
+Uygulamalar menüsü görünüm türü
 Otomatik
 El ile
 HDL Sunucu Başlat
@@ -76,7 +76,7 @@ HDL Sunucu Başlatma Hatası
 HDL Sunucu Başlıyor...
 HDL Sunucu Çalışıyor...
 HDL Sunucu Durduruluyor...
-IGR çıkış yolu
+IGR yeri
 Arkaplan rengi
 Metin rengi
 - PS2 - 
@@ -106,7 +106,7 @@ Görüntü ayarları
 Yazma işlemlerini aktif et
 USB oyun bütünlüğünü kontrol et (Fragmentation)
 En son oynanan oyunu hatırla
-Select tuşu
+Seçme tuşu
 Hata, oyun dosyası parçalı
 Hata, nesne çalıştırılamıyor
 Test
