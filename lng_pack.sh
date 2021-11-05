@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash 
 # Lang Packer for Open-PS2-Loader
 # Made by Caio99BR <caiooliveirafarias0@gmail.com>
 # Reworked by Doctor Q <Dr-Q@users.noreply.github.com>
